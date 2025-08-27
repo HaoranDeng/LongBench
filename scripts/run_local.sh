@@ -28,3 +28,5 @@ python pred.py --model $MODEL_PATH
 
 # 可选：推理结束后关闭 vLLM
 kill $VLLM_PID
+
+python result.py
