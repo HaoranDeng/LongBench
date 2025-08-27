@@ -24,9 +24,9 @@ until curl -s http://127.0.0.1:$PORT/v1/models >/dev/null; do
 done
 
 echo "vLLM is ready! Starting prediction..."
-python pred.py --model $MODEL_PATH
+python3 pred.py --model $MODEL_PATH
 
 # 可选：推理结束后关闭 vLLM
 kill $VLLM_PID
 
-python result.py
+python3 result.py
