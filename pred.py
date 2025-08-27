@@ -71,8 +71,11 @@ def get_pred(data, args, fout):
     model = args.model
     if "gpt" in model or "o1" in model:
         tokenizer = tiktoken.encoding_for_model("gpt-4o-2024-08-06")
-    else:
+    elif model in model_map:
         tokenizer = AutoTokenizer.from_pretrained(model_map[model], trust_remote_code=True)
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(model, trust_remote_code=True)
+    
     client = OpenAI(
         base_url=URL,
         api_key=API_KEY
