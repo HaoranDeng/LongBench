@@ -2,7 +2,9 @@
 
 export VLLM_ALLOW_LONG_MAX_MODEL_LEN=1
 MODEL_PATH="/mnt/blob-pretraining-hptraining/long_corpus/checkpoints/lcft_Meta-Llama-3-8B_ready_book-odl/checkpoint-1000"
-# MODEL_NAME="THUDM/glm-4-9b-chat"
+MODEL_NAME=$MODEL_PATH
+# MODEL_NAME="GLM-4-9B-Chat"
+# MODEL_PATH="THUDM/glm-4-9b-chat"
 PORT=8000
 API_KEY="token-abc123"
 
@@ -24,7 +26,7 @@ until curl -s http://127.0.0.1:$PORT/v1/models >/dev/null; do
 done
 
 echo "vLLM is ready! Starting prediction..."
-python3 pred.py --model $MODEL_PATH
+python3 pred.py --model $MODEL_NAME
 
 # 可选：推理结束后关闭 vLLM
 kill $VLLM_PID

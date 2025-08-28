@@ -29,15 +29,15 @@ def query_llm(prompt, model, tokenizer, client=None, temperature=0.5, max_new_to
             input_ids = input_ids[:max_len//2] + input_ids[-max_len//2:]
             prompt = tokenizer.decode(input_ids, skip_special_tokens=True)
     else:
-        # input_ids = tokenizer.encode(prompt)
-        input_ids = tokenizer.encode(prompt, disallowed_special=())
+        input_ids = tokenizer.encode(prompt)
+        # input_ids = tokenizer.encode(prompt, disallowed_special=())
         if len(input_ids) > max_len:
             input_ids = input_ids[:max_len//2] + input_ids[-max_len//2:]
             prompt = tokenizer.decode(input_ids)
     tries = 0
     if model in model_map:
         model = model_map[model]
-    while tries < 5:
+    while tries < 2:
         tries += 1
         try:
             # completion = client.chat.completions.create(
@@ -49,12 +49,11 @@ def query_llm(prompt, model, tokenizer, client=None, temperature=0.5, max_new_to
             completion = client.completions.create(
                 model=model,
                 prompt=prompt,
-                # messages=[{"role": "user", "content": prompt}],
                 temperature=temperature,
                 max_tokens=max_new_tokens,
-                stream="false"
+                stream=False,
             )
-            return completion.choices[0].message.content
+            return completion.choices[0].text
         except KeyboardInterrupt as e:
             raise e
         except Exception as e:
@@ -162,7 +161,7 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--save_dir", "-s", type=str, default="results")
-    parser.add_argument("--model", "-m", type=str, default="GLM-4-9B-Chat")
+    parser.add_argument("--model", "-m", type=str)
     parser.add_argument("--cot", "-cot", action='store_true') # set to True if using COT
     parser.add_argument("--no_context", "-nc", action='store_true') # set to True if using no context (directly measuring memorization)
     parser.add_argument("--rag", "-rag", type=int, default=0) # set to 0 if RAG is not used, otherwise set to N when using top-N retrieved context
