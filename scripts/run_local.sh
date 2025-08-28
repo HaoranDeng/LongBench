@@ -27,8 +27,5 @@ done
 
 echo "vLLM is ready! Starting prediction..."
 python3 pred.py --model $MODEL_NAME
-
-# 可选：推理结束后关闭 vLLM
-kill $VLLM_PID
-
+ls -al
 python3 result.py
