@@ -53,7 +53,10 @@ def query_llm(prompt, model, tokenizer, client=None, temperature=0.5, max_new_to
                 max_tokens=max_new_tokens,
                 stream=False,
             )
-            return completion.choices[0].text
+            if isinstance(completion, str):
+                return completion
+            else:
+                return completion.choices[0].text
         except KeyboardInterrupt as e:
             raise e
         except Exception as e:
