@@ -8,6 +8,7 @@ from openai import OpenAI
 from transformers import AutoTokenizer
 import tiktoken
 import torch.multiprocessing as mp
+from vllm import LLM, SamplingParams
 
 model_map = json.loads(open('config/model2path.json', encoding='utf-8').read())
 maxlen_map = json.loads(open('config/model2maxlen.json', encoding='utf-8').read())
@@ -20,7 +21,7 @@ template_0shot = open('prompts/0shot.txt', encoding='utf-8').read()
 template_0shot_cot = open('prompts/0shot_cot.txt', encoding='utf-8').read()
 template_0shot_cot_ans = open('prompts/0shot_cot_ans.txt', encoding='utf-8').read()
 
-def query_llm(prompt, model, tokenizer, client=None, temperature=0.5, max_new_tokens=128, stop=None):
+def query_llm(prompt, model, tokenizer, llm=None, temperature=0.5, max_new_tokens=128, stop=None):
     # truncate
     max_len = maxlen_map[model] if model in maxlen_map.keys() else 120000
     if model in model_map:
@@ -37,34 +38,37 @@ def query_llm(prompt, model, tokenizer, client=None, temperature=0.5, max_new_to
     tries = 0
     if model in model_map:
         model = model_map[model]
-    while tries < 2:
-        tries += 1
-        try:
+    # while tries < 2:
+    #     tries += 1
+    #     try:
             # completion = client.chat.completions.create(
             #     model=model,
             #     messages=[{"role": "user", "content": prompt}],
             #     temperature=temperature,
             #     max_tokens=max_new_tokens,
             # )
-            completion = client.completions.create(
-                model=model,
-                prompt=prompt,
-                temperature=temperature,
-                max_tokens=max_new_tokens,
-                stream=False,
-            )
-            if isinstance(completion, str):
-                return completion
-            else:
-                return completion.choices[0].text
-        except KeyboardInterrupt as e:
-            raise e
-        except Exception as e:
-            print("Error Occurs: \"%s\"        Retry ..."%(str(e)))
-            time.sleep(1)
-    else:
-        print("Max tries. Failed.")
-        return ''
+    sampling_params = SamplingParams(temperature=temperature, top_p=1, max_tokens=max_new_tokens)
+    completion = llm.generate([prompt], sampling_params)
+    return completion
+            # completion = client.completions.create(
+            #     model=model,
+            #     prompt=prompt,
+            #     temperature=temperature,
+            #     max_tokens=max_new_tokens,
+            #     stream=False,
+            # )
+    #         if isinstance(completion, str):
+    #             return completion
+    #         else:
+    #             return completion.choices[0].text
+    #     except KeyboardInterrupt as e:
+    #         raise e
+    #     except Exception as e:
+    #         print("Error Occurs: \"%s\"        Retry ..."%(str(e)))
+    #         time.sleep(1)
+    # else:
+    #     print("Max tries. Failed.")
+    #     return ''
 
 def extract_answer(response):
     response = response.replace('*', '')
@@ -78,7 +82,7 @@ def extract_answer(response):
         else:
             return None
 
-def get_pred(data, args, fout):
+def get_pred(data, args, fout, llm):
     model = args.model
     if "gpt" in model or "o1" in model:
         tokenizer = tiktoken.encoding_for_model("gpt-4o-2024-08-06")
@@ -106,9 +110,9 @@ def get_pred(data, args, fout):
             template = template_0shot
         prompt = template.replace('$DOC$', context.strip()).replace('$Q$', item['question'].strip()).replace('$C_A$', item['choice_A'].strip()).replace('$C_B$', item['choice_B'].strip()).replace('$C_C$', item['choice_C'].strip()).replace('$C_D$', item['choice_D'].strip())
         if args.cot:
-            output = query_llm(prompt, model, tokenizer, client, temperature=0.1, max_new_tokens=1024)
+            output = query_llm(prompt, model, tokenizer, llm, temperature=0.1, max_new_tokens=1024)
         else:
-            output = query_llm(prompt, model, tokenizer, client, temperature=0.1, max_new_tokens=128)
+            output = query_llm(prompt, model, tokenizer, llm, temperature=0.1, max_new_tokens=128)
         if output == '':
             continue
         if args.cot: # extract answer
@@ -141,6 +145,15 @@ def main():
     dataset = load_dataset('THUDM/LongBench-v2', split='train') # dataset = json.load(open('data.json', 'r', encoding='utf-8'))
     data_all = [{"_id": item["_id"], "domain": item["domain"], "sub_domain": item["sub_domain"], "difficulty": item["difficulty"], "length": item["length"], "question": item["question"], "choice_A": item["choice_A"], "choice_B": item["choice_B"], "choice_C": item["choice_C"], "choice_D": item["choice_D"], "answer": item["answer"], "context": item["context"]} for item in dataset]
 
+    print(f"Loading model for vLLM: {args.model} ...")
+    llm = LLM(
+        model=args.model,
+        tensor_parallel_size=args.tensor_parallel_size,
+        gpu_memory_utilization=args.gpu_memory_utilization,
+        trust_remote_code=True,
+        max_model_len=args.max_model_len,
+    )
+
     # cache
     has_data = {}
     if os.path.exists(out_file):
@@ -155,7 +168,7 @@ def main():
     data_subsets = [data[i::args.n_proc] for i in range(args.n_proc)]
     processes = []
     for rank in range(args.n_proc):
-        p = mp.Process(target=get_pred, args=(data_subsets[rank], args, fout))
+        p = mp.Process(target=get_pred, args=(data_subsets[rank], args, fout, llm))
         p.start()
         processes.append(p)
     for p in processes:
@@ -169,5 +182,10 @@ if __name__ == "__main__":
     parser.add_argument("--no_context", "-nc", action='store_true') # set to True if using no context (directly measuring memorization)
     parser.add_argument("--rag", "-rag", type=int, default=0) # set to 0 if RAG is not used, otherwise set to N when using top-N retrieved context
     parser.add_argument("--n_proc", "-n", type=int, default=16)
+    parser.add_argument('--max_model_len', type=int, default=131072, help="最大输入 token 数（用于截断）")
+    parser.add_argument('--gpu_memory_utilization', type=float, default=0.95, help="vLLM 的 GPU 内存使用率")
+    parser.add_argument('--tensor_parallel_size', type=int, default=1, help="vLLM 张量并行大小")
     args = parser.parse_args()
+
+
     main()

@@ -5,27 +5,27 @@ MODEL_PATH="/mnt/blob-pretraining-hptraining/long_corpus/checkpoints/lcft_Meta-L
 MODEL_NAME=$MODEL_PATH
 # MODEL_NAME="GLM-4-9B-Chat"
 # MODEL_PATH="THUDM/glm-4-9b-chat"
-PORT=8000
-API_KEY="token-abc123"
+# PORT=8000
+# API_KEY="token-abc123"
 
-# 启动 vLLM 服务，后台运行
-vllm serve $MODEL_PATH \
-    --port $PORT \
-    --api-key $API_KEY \
-    --tensor-parallel-size 1 \
-    --gpu-memory-utilization 0.95 \
-    --max_model_len 131072 \
-    --trust-remote-code &
+# # 启动 vLLM 服务，后台运行
+# vllm serve $MODEL_PATH \
+#     --port $PORT \
+#     --api-key $API_KEY \
+#     --tensor-parallel-size 1 \
+#     --gpu-memory-utilization 0.95 \
+#     --max_model_len 131072 \
+#     --trust-remote-code &
 
-VLLM_PID=$!
+# VLLM_PID=$!
 
-# 等待 vLLM 服务启动完成
-echo "Waiting for vLLM to be ready..."
-until curl -s http://127.0.0.1:$PORT/v1/models >/dev/null; do
-    sleep 1
-done
+# # 等待 vLLM 服务启动完成
+# echo "Waiting for vLLM to be ready..."
+# until curl -s http://127.0.0.1:$PORT/v1/models >/dev/null; do
+#     sleep 1
+# done
 
-echo "vLLM is ready! Starting prediction..."
+# echo "vLLM is ready! Starting prediction..."
 python3 pred.py --model $MODEL_NAME
 ls -al
 python3 result.py
