@@ -22,13 +22,14 @@ template_0shot_cot_ans = open('prompts/0shot_cot_ans.txt', encoding='utf-8').rea
 
 def query_llm(prompt, model, tokenizer, client=None, temperature=0.5, max_new_tokens=128, stop=None):
     # truncate
-    max_len = maxlen_map[model]
+    max_len = maxlen_map[model] if model in maxlen_map.keys() else 120000
     if model in model_map:
         input_ids = tokenizer.encode(prompt)
         if len(input_ids) > max_len:
             input_ids = input_ids[:max_len//2] + input_ids[-max_len//2:]
             prompt = tokenizer.decode(input_ids, skip_special_tokens=True)
     else:
+        # input_ids = tokenizer.encode(prompt)
         input_ids = tokenizer.encode(prompt, disallowed_special=())
         if len(input_ids) > max_len:
             input_ids = input_ids[:max_len//2] + input_ids[-max_len//2:]
@@ -39,11 +40,19 @@ def query_llm(prompt, model, tokenizer, client=None, temperature=0.5, max_new_to
     while tries < 5:
         tries += 1
         try:
-            completion = client.chat.completions.create(
+            # completion = client.chat.completions.create(
+            #     model=model,
+            #     messages=[{"role": "user", "content": prompt}],
+            #     temperature=temperature,
+            #     max_tokens=max_new_tokens,
+            # )
+            completion = client.completions.create(
                 model=model,
-                messages=[{"role": "user", "content": prompt}],
+                prompt=prompt,
+                # messages=[{"role": "user", "content": prompt}],
                 temperature=temperature,
                 max_tokens=max_new_tokens,
+                stream="false"
             )
             return completion.choices[0].message.content
         except KeyboardInterrupt as e:
