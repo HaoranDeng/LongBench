@@ -53,7 +53,7 @@ def query_llm(prompt, model, tokenizer, llm=None, temperature=0.5, max_new_token
     # print(f"prompt: {prompt}")
     completion = llm.generate(prompt, sampling_params)
     ret = completion[0].outputs[0].text
-    # print(ret)
+    # print(ret)d
     return ret
             # completion = client.completions.create(
             #     model=model,
@@ -188,7 +188,7 @@ if __name__ == "__main__":
     parser.add_argument("--no_context", "-nc", action='store_true') # set to True if using no context (directly measuring memorization)
     parser.add_argument("--rag", "-rag", type=int, default=0) # set to 0 if RAG is not used, otherwise set to N when using top-N retrieved context
     parser.add_argument("--n_proc", "-n", type=int, default=1)
-    parser.add_argument('--max_model_len', type=int, default=8192, help="最大输入 token 数（用于截断）")
+    parser.add_argument('--max_model_len', type=int, default=131072, help="最大输入 token 数（用于截断）")
     parser.add_argument('--gpu_memory_utilization', type=float, default=0.95, help="vLLM 的 GPU 内存使用率")
     parser.add_argument('--tensor_parallel_size', type=int, default=1, help="vLLM 张量并行大小")
     args = parser.parse_args()
