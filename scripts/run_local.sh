@@ -28,4 +28,4 @@ MODEL_NAME=$MODEL_PATH
 # echo "vLLM is ready! Starting prediction..."
 python3 pred.py --model $MODEL_NAME
 # ls -al
-# python3 result.py
+python3 result.py
