@@ -147,7 +147,7 @@ def main():
     else:
         out_file = os.path.join(args.save_dir, args.model.split("/")[-1] + ".jsonl")
 
-    dataset = load_dataset('THUDM/LongBench-v2', split='train') # dataset = json.load(open('data.json', 'r', encoding='utf-8'))
+    dataset = load_dataset('zai-org/LongBench', split='train') # dataset = json.load(open('data.json', 'r', encoding='utf-8'))
     data_all = [{"_id": item["_id"], "domain": item["domain"], "sub_domain": item["sub_domain"], "difficulty": item["difficulty"], "length": item["length"], "question": item["question"], "choice_A": item["choice_A"], "choice_B": item["choice_B"], "choice_C": item["choice_C"], "choice_D": item["choice_D"], "answer": item["answer"], "context": item["context"]} for item in dataset]
 
     print(f"Loading model for vLLM: {args.model} ...")
@@ -192,6 +192,5 @@ if __name__ == "__main__":
     parser.add_argument('--gpu_memory_utilization', type=float, default=0.95, help="vLLM 的 GPU 内存使用率")
     parser.add_argument('--tensor_parallel_size', type=int, default=1, help="vLLM 张量并行大小")
     args = parser.parse_args()
-
 
     main()
