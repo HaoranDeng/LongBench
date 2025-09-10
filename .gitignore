@@ -1,4 +1,5 @@
 results/
 
-LongBench/pred/
+LongBench/pred
+LongBench/pred_e
 result.txt
