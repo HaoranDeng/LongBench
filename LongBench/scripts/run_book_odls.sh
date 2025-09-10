@@ -1,9 +1,6 @@
-MODEL_PATH="book-odls-1000"
-# MODEL_PATH="llama2-7b-chat-4k"
-
-python pred.py --model $MODEL_PATH
-
-python eval.py --model $MODEL_PATH
-
+model_name="book-odls-1000"
+python pred.py --model $model_name
+python eval.py --model $model_name
 BLOB_PATH="/mnt/blob-pretraining-hptraining/haoran_results/LongBench"
-mv pred/${model_name} $BLOB_PATH/${model_name}
+mkdir -p $BLOB_PATH
+mv pred/${model_name} ${BLOB_PATH}/${model_name}
