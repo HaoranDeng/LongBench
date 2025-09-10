@@ -1,5 +1,4 @@
-MODEL_PATH="book-odls-1000"
-# MODEL_PATH="llama2-7b-chat-4k"
+MODEL_PATH="llama2-7b-chat-4k"
 
 python pred.py --model $MODEL_PATH
 
