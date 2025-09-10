@@ -8,12 +8,11 @@ import numpy as np
 import random
 import argparse
 from llama_flash_attn_monkey_patch import replace_llama_attn_with_flash_attn
-import torch.distributed as dist
 import torch.multiprocessing as mp
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, default=None, choices=["llama2-7b-chat-4k", "longchat-v1.5-7b-32k", "xgen-7b-8k", "internlm-7b-8k", "chatglm2-6b", "chatglm2-6b-32k", "chatglm3-6b-32k", "vicuna-v1.5-7b-16k"])
+    parser.add_argument('--model', type=str, required=True, help="Model name")
     parser.add_argument('--e', action='store_true', help="Evaluate on LongBench-E")
     return parser.parse_args(args)
 
@@ -39,6 +38,8 @@ def build_chat(tokenizer, prompt, model_name):
         prompt = header + f" ### Human: {prompt}\n###"
     elif "internlm" in model_name:
         prompt = f"<|User|>:{prompt}<eoh>\n<|Bot|>:"
+    else:
+        prompt = f"[INST]{prompt}[/INST]"
     return prompt
 
 def post_process(response, model_name):
@@ -93,7 +94,6 @@ def get_pred(rank, world_size, data, max_length, max_gen, prompt_format, dataset
         with open(out_path, "a", encoding="utf-8") as f:
             json.dump({"pred": pred, "answers": json_obj["answers"], "all_classes": json_obj["all_classes"], "length": json_obj["length"]}, f, ensure_ascii=False)
             f.write('\n')
-    dist.destroy_process_group()
 
 def seed_everything(seed):
     torch.manual_seed(seed)
@@ -105,27 +105,8 @@ def seed_everything(seed):
     torch.cuda.manual_seed_all(seed)
 
 def load_model_and_tokenizer(path, model_name, device):
-    if "chatglm" in model_name or "internlm" in model_name or "xgen" in model_name:
-        tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True)
-        model = AutoModelForCausalLM.from_pretrained(path, trust_remote_code=True, torch_dtype=torch.bfloat16).to(device)
-    elif "llama2" in model_name:
-        replace_llama_attn_with_flash_attn()
-        tokenizer = LlamaTokenizer.from_pretrained(path)
-        model = LlamaForCausalLM.from_pretrained(path, torch_dtype=torch.bfloat16).to(device)
-    elif "longchat" in model_name or "vicuna" in model_name:
-        from fastchat.model import load_model
-        replace_llama_attn_with_flash_attn()
-        model, _ = load_model(
-            path,
-            device='cpu',
-            num_gpus=0,
-            load_8bit=False,
-            cpu_offloading=False,
-            debug=False,
-        )
-        model = model.to(device)
-        model = model.bfloat16()
-        tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True, use_fast=False)
+    tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True)
+    model = AutoModelForCausalLM.from_pretrained(path, trust_remote_code=True, torch_dtype=torch.bfloat16).to(device)
     model = model.eval()
     return model, tokenizer
 
@@ -137,6 +118,8 @@ if __name__ == '__main__':
 
     model2path = json.load(open("config/model2path.json", "r"))
     model2maxlen = json.load(open("config/model2maxlen.json", "r"))
+    assert args.model in model2path, f"Model {args.model} not found in model2path.json"
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model_name = args.model
     # define your model
