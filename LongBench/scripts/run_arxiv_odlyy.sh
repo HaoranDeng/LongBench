@@ -1,4 +1,4 @@
-model_name="book-odls-1000"
+model_name="arxiv-odlyy"
 python pred.py --model $model_name
 python eval.py --model $model_name
 
