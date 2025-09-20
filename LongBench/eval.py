@@ -85,6 +85,7 @@ if __name__ == '__main__':
     print("Evaluating on:", all_files)
     for filename in all_files:
         if not filename.endswith("jsonl"):
+            print(f"File not found: {filename}")
             continue
         predictions, answers, lengths = [], [], []
         dataset = filename.split('.')[0]

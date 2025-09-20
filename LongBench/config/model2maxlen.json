@@ -7,5 +7,7 @@
     "chatglm2-6b-32k": 31500,
     "chatglm3-6b-32k": 31500,
     "vicuna-v1.5-7b-16k": 15500,
-    "book-odls-1000": 65536
+    "book-odls-1000": 65536,
+    "arxiv-odlyy": 65536,
+    "book-odlyy": 65536
 }
