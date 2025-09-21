@@ -9,5 +9,9 @@
     "vicuna-v1.5-7b-16k": "lmsys/vicuna-7b-v1.5-16k",
     "book-odls-1000": "/mnt/blob-pretraining-hptraining/long_corpus/checkpoints/lcft_Meta-Llama-3-8B_ready_book-odl/checkpoint-1000",
     "arxiv-odlyy": "/mnt/blob-pretraining-hptraining/long_corpus/checkpoints/sft_arxiv-odlyy82-1000/checkpoint-250",
-    "book-odlyy": "/mnt/blob-pretraining-hptraining/long_corpus/checkpoints/sft_book-odlyy82-1000/checkpoint-250"
+    "arxiv-vanilla": "/mnt/blob-pretraining-hptraining/long_corpus/checkpoints/sft_arxiv-vanilla-1000/checkpoint-250",
+    "arxiv-wj55": "/mnt/blob-pretraining-hptraining/long_corpus/checkpoints/sft_arxiv-wj55-1000/checkpoint-250",
+    "book-odlyy": "/mnt/blob-pretraining-hptraining/long_corpus/checkpoints/sft_book-odlyy82-1000/checkpoint-250",
+    "book-vanilla": "/mnt/blob-pretraining-hptraining/long_corpus/checkpoints/sft_book-vanilla-1000/checkpoint-250",
+    "book-wj55": "/mnt/blob-pretraining-hptraining/long_corpus/checkpoints/sft_book-wj55-1000/checkpoint-250"
 }

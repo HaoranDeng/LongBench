@@ -9,5 +9,9 @@
     "vicuna-v1.5-7b-16k": 15500,
     "book-odls-1000": 65536,
     "arxiv-odlyy": 65536,
-    "book-odlyy": 65536
+    "arxiv-vanilla": 65536,
+    "arxiv-wj55": 65536,
+    "book-odlyy": 65536,
+    "book-vanilla": 65536,
+    "book-wj55": 65536
 }
