@@ -13,5 +13,8 @@
     "arxiv-wj55": 65536,
     "book-odlyy": 65536,
     "book-vanilla": 65536,
-    "book-wj55": 65536
+    "book-wj55": 65536,
+    "cc-odlyy": 65536,
+    "cc-vanilla": 65536,
+    "cc-wj55": 65536
 }

@@ -13,5 +13,8 @@
     "arxiv-wj55": "/mnt/blob-pretraining-hptraining/long_corpus/checkpoints/sft_arxiv-wj55-1000/checkpoint-250",
     "book-odlyy": "/mnt/blob-pretraining-hptraining/long_corpus/checkpoints/sft_book-odlyy82-1000/checkpoint-250",
     "book-vanilla": "/mnt/blob-pretraining-hptraining/long_corpus/checkpoints/sft_book-vanilla-1000/checkpoint-250",
-    "book-wj55": "/mnt/blob-pretraining-hptraining/long_corpus/checkpoints/sft_book-wj55-1000/checkpoint-250"
+    "book-wj55": "/mnt/blob-pretraining-hptraining/long_corpus/checkpoints/sft_book-wj55-1000/checkpoint-250",
+    "cc-odlyy": "/mnt/blob-pretraining-hptraining/long_corpus/checkpoints/sft_cc-odlyy82-1000/checkpoint-250",
+    "cc-vanilla": "/mnt/blob-pretraining-hptraining/long_corpus/checkpoints/sft_cc-vanilla-1000/checkpoint-250",
+    "cc-wj55": "/mnt/blob-pretraining-hptraining/long_corpus/checkpoints/sft_cc-wj55-1000/checkpoint-250"
 }
